@@ -168,8 +168,8 @@ const val BASE_URL = "http://localhost:8080/api/"
 
 ## Status projekta
 
-🚧 U razvoju — kolegij ak. god. 2024./2025.
+🚧 U razvoju — kolegij ak. god. 03/2026. 06/2026.
 
 ---
 
-*Kolegij: Oblikovanje i izrada cjelovitog aplikacijskog rješenja | Fakultet organizacije i informatike*
+*Kolegij: Oblikovanje i izrada cjelovitog aplikacijskog rješenja*
