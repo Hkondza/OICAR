@@ -11,8 +11,8 @@ Projekt izrađen u sklopu kolegija **Oblikovanje i izrada cjelovitog aplikacijsk
 | Ime | Uloga |
 |-----|-------|
 | Hrvoje Kondža | Projekt menadžer / Backend |
-| Tomislav Dronjić | Backend |
-| Leonardo Nardiello | Android developer |
+| Tomislav Dronjić | Android developer |
+| Leonardo Nardiello |Web developer|
 | Ivan Jerković | Web developer |
 
 ---
