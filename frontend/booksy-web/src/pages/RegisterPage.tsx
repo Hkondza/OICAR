@@ -140,7 +140,7 @@ export default function RegisterPage() {
               <label className="label">I want to</label>
               <select className="select" name="role" value={form.role} onChange={handleChange}>
                 <option value="GUEST">Book properties as a Guest</option>
-                <option value="HOST">List my property as a Host</option>
+                <option value="OWNER">List my property as a Owner</option>
               </select>
             </div>
 
