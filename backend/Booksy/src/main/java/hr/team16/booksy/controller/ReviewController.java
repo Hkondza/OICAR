@@ -1,10 +1,8 @@
 package hr.team16.booksy.controller;
 
 import hr.team16.booksy.dto.ReviewRequest;
-import hr.team16.booksy.model.Review;
-import hr.team16.booksy.model.User;
+import hr.team16.booksy.dto.ReviewResponse;
 import hr.team16.booksy.service.ReviewService;
-import hr.team16.booksy.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,35 +20,39 @@ import java.util.List;
 @Tag(name = "Review")
 public class ReviewController {
 
-    private final UserService userService;
     private final ReviewService reviewService;
 
     @GetMapping("/property/{propertyId}")
     @Operation(summary = "Get reviews for a property")
-    public List<Review> getByProperty(@PathVariable Long propertyId) {
-        return reviewService.getByProperty(propertyId);
+    public ResponseEntity<List<ReviewResponse>> getByProperty(
+            @PathVariable Long propertyId) {
+        return ResponseEntity.ok(reviewService.getByProperty(propertyId));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get review by ID")
-    public Review getById(@PathVariable Long id) {
-        return reviewService.getById(id);
+    public ResponseEntity<ReviewResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getById(id));
     }
 
     @PostMapping
-    @Operation(summary = "Create review", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create review",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("isAuthenticated()")
-    public Review create(@RequestBody ReviewRequest req, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return reviewService.create(req, user);
+    public ResponseEntity<ReviewResponse> create(
+            @RequestBody ReviewRequest request,
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(reviewService.create(request, email));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete own review", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete own review",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        reviewService.delete(id, user);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal String email) {
+        reviewService.delete(id, email);
         return ResponseEntity.noContent().build();
     }
 }

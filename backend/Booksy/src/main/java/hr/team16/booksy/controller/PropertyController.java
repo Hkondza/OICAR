@@ -1,13 +1,8 @@
 package hr.team16.booksy.controller;
 
 import hr.team16.booksy.dto.PropertyRequest;
-import hr.team16.booksy.dto.StatusRequest;
-import hr.team16.booksy.model.Property;
-import hr.team16.booksy.model.User;
-import hr.team16.booksy.model.UserProperty;
+import hr.team16.booksy.dto.PropertyResponse;
 import hr.team16.booksy.service.PropertyService;
-import hr.team16.booksy.service.UserPropertyService;
-import hr.team16.booksy.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,70 +17,85 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/properties")
 @RequiredArgsConstructor
-@Tag(name="Propety")
+@Tag(name = "Property")
 public class PropertyController {
 
-    private final UserService userService;
     private final PropertyService propertyService;
-    private final UserPropertyService userPropertyService;
 
     @GetMapping
-    @Operation(summary = "List all properties")
-    public List<Property> getAll() {
-        return propertyService.getAll();
+    @Operation(summary = "List all approved properties")
+    public List<PropertyResponse> getAll() {
+        return propertyService.getApprovedProperties();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get property by ID")
-    public Property getById(@PathVariable Long id) {
-        return propertyService.getById(id);
+    public ResponseEntity<PropertyResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(propertyService.getById(id));
     }
 
-    @PostMapping
-    @Operation(summary = "Create property", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public Property create(@RequestBody PropertyRequest req, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return propertyService.create(req, user);
+    @PostMapping("/submit")
+    @Operation(summary = "Submit property for approval",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<PropertyResponse> submit(
+            @RequestBody PropertyRequest request,
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(propertyService.submitProperty(request, email));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update property", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public Property update(@PathVariable Long id, @RequestBody PropertyRequest req,
-                           @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return propertyService.update(id, req, user);
+    @Operation(summary = "Update property",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<PropertyResponse> update(
+            @PathVariable Long id,
+            @RequestBody PropertyRequest request,
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(propertyService.update(id, request, email));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete property", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        propertyService.delete(id, user);
+    @Operation(summary = "Delete property",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal String email) {
+        propertyService.delete(id, email);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/request-access")
-    @Operation(summary = "Request HOST access for a property", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
-    public UserProperty requestAccess(@PathVariable Long id, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return userPropertyService.requestAccess(id, user);
+    @GetMapping("/my")
+    @Operation(summary = "Get my properties",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<List<PropertyResponse>> getMine(
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(propertyService.getOwnerProperties(email));
     }
 
-    @GetMapping("/access-requests")
-    @Operation(summary = "Admin: list pending access requests", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/pending")
+    @Operation(summary = "Admin: list pending requests",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserProperty> getPending() {
-        return userPropertyService.getPending();
+    public ResponseEntity<List<PropertyResponse>> getPending() {
+        return ResponseEntity.ok(propertyService.getPendingRequests());
     }
 
-    @PatchMapping("/access-requests/{id}")
-    @Operation(summary = "Admin: approve or reject access request", security = @SecurityRequirement(name = "bearerAuth"))
+    @PatchMapping("/{id}/approve")
+    @Operation(summary = "Admin: approve property",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMIN')")
-    public UserProperty updateAccessStatus(@PathVariable Long id, @RequestBody StatusRequest req) {
-        return userPropertyService.updateStatus(id, req.getStatus());
+    public ResponseEntity<PropertyResponse> approve(@PathVariable Long id) {
+        return ResponseEntity.ok(propertyService.approveProperty(id));
+    }
+
+    @PatchMapping("/{id}/deny")
+    @Operation(summary = "Admin: deny property",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PropertyResponse> deny(@PathVariable Long id) {
+        return ResponseEntity.ok(propertyService.denyProperty(id));
     }
 }

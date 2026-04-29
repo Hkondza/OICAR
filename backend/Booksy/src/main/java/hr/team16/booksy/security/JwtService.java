@@ -18,14 +18,24 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Long userId) {
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim("userId", userId)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000)) // 24h
+                .expiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getKey())
                 .compact();
+    }
+
+    public Long extractUserId(String token) {
+        return ((Number) Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId")).longValue();
     }
 
     public String extractEmail(String token) {
@@ -35,9 +45,6 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
-    }
-    public String extractRole(String token) {
-        return getClaims(token).get("role", String.class);
     }
 
     public boolean isTokenValid(String token) {
@@ -52,12 +59,13 @@ public class JwtService {
         }
     }
 
-    private Claims getClaims(String token){
-        return Jwts.parser()
+    public String extractRole(String token) {
+        return (String) Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload();
-
+                .getPayload()
+                .get("role");
     }
+
 }

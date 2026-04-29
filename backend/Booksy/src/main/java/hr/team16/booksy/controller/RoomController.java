@@ -1,10 +1,8 @@
 package hr.team16.booksy.controller;
 
 import hr.team16.booksy.dto.RoomRequest;
-import hr.team16.booksy.model.Room;
-import hr.team16.booksy.model.User;
+import hr.team16.booksy.dto.RoomResponse;
 import hr.team16.booksy.service.RoomService;
-import hr.team16.booksy.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,46 +20,57 @@ import java.util.List;
 @Tag(name = "Room")
 public class RoomController {
 
-    private final UserService userService;
     private final RoomService roomService;
+
 
     @GetMapping
     @Operation(summary = "List all rooms")
-    public List<Room> getAll() { return roomService.getAll(); }
+    public ResponseEntity<List<RoomResponse>> getAll() {
+        return ResponseEntity.ok(roomService.getAllRooms());
+    }
 
     @GetMapping("/property/{propertyId}")
     @Operation(summary = "List rooms by property")
-    public List<Room> getByProperty(@PathVariable Long propertyId) {
-        return roomService.getByProperty(propertyId);
+    public ResponseEntity<List<RoomResponse>> getByProperty(@PathVariable Long propertyId) {
+        return ResponseEntity.ok(roomService.getRoomsByProperty(propertyId));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get room by ID")
-    public Room getById(@PathVariable Long id) { return roomService.getById(id); }
+    public ResponseEntity<RoomResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.getRoomById(id));
+    }
 
-    @PostMapping
-    @Operation(summary = "Create room", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public Room create(@RequestBody RoomRequest req, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return roomService.create(req, user);
+    @PostMapping("/property/{propertyId}")
+    @Operation(summary = "Create room",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<RoomResponse> create(
+            @PathVariable Long propertyId,
+            @RequestBody RoomRequest request,
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(roomService.addRoom(propertyId, request, email));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update room", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public Room update(@PathVariable Long id, @RequestBody RoomRequest req,
-                       @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        return roomService.update(id, req, user);
+    @Operation(summary = "Update room",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<RoomResponse> update(
+            @PathVariable Long id,
+            @RequestBody RoomRequest request,
+            @AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(roomService.updateRoom(id, request, email));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete room", security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('HOST') or hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal String email) {
-        User user = userService.getByEmail(email);
-        roomService.delete(id, user);
+    @Operation(summary = "Delete room",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal String email) {
+        roomService.deleteRoom(id, email);
         return ResponseEntity.noContent().build();
     }
 }
