@@ -10,12 +10,12 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'GUEST',
+    role: 'OWNER',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -54,16 +54,16 @@ export default function RegisterPage() {
           Booksy
         </div>
         <div className="brand-tagline">
-          <h2>Join thousands of travelers and hosts.</h2>
-          <p>Create an account in seconds. Book your next adventure or list your property and start earning today.</p>
+          <h2>Manage your properties with ease.</h2>
+          <p>Create your owner account in seconds. List properties, manage reservations, and track your reviews — all in one place.</p>
         </div>
         <div className="brand-footer">© 2026 Booksy. Team 16.</div>
       </aside>
 
       <main className="auth-form-side">
         <div className="auth-card">
-          <h1 className="auth-title">Create your account</h1>
-          <p className="auth-subtitle">Start your journey with Booksy.</p>
+          <h1 className="auth-title">Create your owner account</h1>
+          <p className="auth-subtitle">Start managing your properties with Booksy.</p>
 
           <form onSubmit={handleSubmit}>
             <div className="field">
@@ -134,14 +134,6 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="field">
-              <label className="label">I want to</label>
-              <select className="select" name="role" value={form.role} onChange={handleChange}>
-                <option value="GUEST">Book properties as a Guest</option>
-                <option value="OWNER">List my property as a Owner</option>
-              </select>
             </div>
 
             {error && <div className="error-msg">{error}</div>}
