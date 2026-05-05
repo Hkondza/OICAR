@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { clearSession, getSession } from '../api/auth'
 
 export default function DashboardPage() {
@@ -48,13 +48,15 @@ export default function DashboardPage() {
             value="—"
             description="View and manage your bookings"
           />
-          <StatCard
-            icon="🏠"
-            iconClass="icon-pink"
-            label="Properties"
-            value="—"
-            description="Browse available stays"
-          />
+          <Link to="/properties" style={{ textDecoration: 'none' }}>
+            <StatCard
+              icon="🏠"
+              iconClass="icon-pink"
+              label="My Properties"
+              value="—"
+              description="Manage your listings and submissions"
+            />
+          </Link>
           <StatCard
             icon="⭐"
             iconClass="icon-green"

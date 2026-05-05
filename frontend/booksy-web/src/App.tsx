@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import PropertiesPage from './pages/PropertiesPage'
 import { getSession } from './api/auth'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -19,6 +20,14 @@ export default function App() {
           element={
             <RequireAuth>
               <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/properties"
+          element={
+            <RequireAuth>
+              <PropertiesPage />
             </RequireAuth>
           }
         />
