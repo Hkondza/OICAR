@@ -22,8 +22,8 @@ public class PropertyService {
     private final UserPropertyRepository userPropertyRepository;
     private final UserRepository userRepository;
 
-    public PropertyResponse submitProperty(PropertyRequest request, String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
+    public PropertyResponse submitProperty(PropertyRequest request, Long userId) {
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Property property = new Property();
@@ -39,7 +39,7 @@ public class PropertyService {
         userProperty.setStatus("PENDING");
         userPropertyRepository.save(userProperty);
 
-        return mapToResponse(property, "PENDING", ownerEmail);
+        return mapToResponse(property, "PENDING", owner.getEmail());
     }
 
     public List<PropertyResponse> getPendingRequests() {
@@ -87,11 +87,9 @@ public class PropertyService {
                 .toList();
     }
 
-    public List<PropertyResponse> getOwnerProperties(String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return userPropertyRepository.findByUserId(owner.getId()).stream()
-                .map(up -> mapToResponse(up.getProperty(), up.getStatus(), ownerEmail))
+    public List<PropertyResponse> getOwnerProperties(Long userId) {
+        return propertyRepository.findByOwnerId(userId).stream()
+                .map(p -> mapToResponse(p, "ACCEPTED", p.getOwner().getEmail()))
                 .toList();
     }
 
@@ -110,25 +108,35 @@ public class PropertyService {
     public PropertyResponse getById(Long id) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
+        String status = property.getOwner() != null ? "ACCEPTED" : "PENDING";
         String ownerEmail = property.getOwner() != null ?
                 property.getOwner().getEmail() : "pending";
-        return mapToResponse(property, "ACCEPTED", ownerEmail);
+        return mapToResponse(property, status, ownerEmail);
     }
 
-    public PropertyResponse update(Long id, PropertyRequest request, String email) {
+    public PropertyResponse update(Long id, PropertyRequest request,Long userId) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        if (property.getOwner() == null ||
+                !property.getOwner().getId().equals(userId)) {
+            throw new RuntimeException("Not your property");
+        }
         property.setName(request.getName());
         property.setAddress(request.getAddress());
         property.setCity(request.getCity());
         property.setCountry(request.getCountry());
         propertyRepository.save(property);
-        return mapToResponse(property, "ACCEPTED", email);
+        return mapToResponse(property, "ACCEPTED", property.getOwner().getEmail());
     }
 
-    public void delete(Long id, String email) {
+    public void delete(Long id, Long userId) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
+        if (property.getOwner() == null ||
+                !property.getOwner().getId().equals(userId)) {
+            throw new RuntimeException("Not your property");
+        }
         propertyRepository.delete(property);
     }
 }
