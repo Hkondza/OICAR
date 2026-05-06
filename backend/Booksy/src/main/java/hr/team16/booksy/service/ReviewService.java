@@ -19,7 +19,6 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
-    private final UserRepository userRepository;
 
     public List<ReviewResponse> getByProperty(Long propertyId) {
         return reviewRepository.findByReservationRoomPropertyId(propertyId).stream()
@@ -33,15 +32,12 @@ public class ReviewService {
         return mapToResponse(review);
     }
 
-    public ReviewResponse create(ReviewRequest request, String email) {
-        User guest = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    public ReviewResponse create(ReviewRequest request, Long userId) {
         Reservation reservation = reservationRepository.findById(request.getReservationId())
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
         // Provjeri je li ovo gostova rezervacija
-        if (!reservation.getGuest().getId().equals(guest.getId()))
+        if (!reservation.getGuest().getId().equals(userId))
             throw new RuntimeException("Forbidden");
 
         // Provjeri je li rezervacija završena
@@ -65,14 +61,11 @@ public class ReviewService {
         return mapToResponse(review);
     }
 
-    public void delete(Long id, String email) {
-        User guest = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    public void delete(Long id, Long userId) {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        if (!review.getReservation().getGuest().getId().equals(guest.getId()))
+        if (!review.getReservation().getGuest().getId().equals(userId))
             throw new RuntimeException("Forbidden");
 
         reviewRepository.deleteById(id);

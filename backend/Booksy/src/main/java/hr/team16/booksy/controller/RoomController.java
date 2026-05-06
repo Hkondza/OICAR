@@ -48,8 +48,8 @@ public class RoomController {
     public ResponseEntity<RoomResponse> create(
             @PathVariable Long propertyId,
             @RequestBody RoomRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(roomService.addRoom(propertyId, request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(roomService.addRoom(propertyId, request, userId));
     }
 
     @PutMapping("/{id}")
@@ -59,8 +59,8 @@ public class RoomController {
     public ResponseEntity<RoomResponse> update(
             @PathVariable Long id,
             @RequestBody RoomRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(roomService.updateRoom(id, request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(roomService.updateRoom(id, request, userId));
     }
 
     @DeleteMapping("/{id}")
@@ -69,8 +69,8 @@ public class RoomController {
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @AuthenticationPrincipal String email) {
-        roomService.deleteRoom(id, email);
+            @AuthenticationPrincipal Long userId) {
+        roomService.deleteRoom(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

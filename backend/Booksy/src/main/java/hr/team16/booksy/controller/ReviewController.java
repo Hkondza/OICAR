@@ -41,8 +41,8 @@ public class ReviewController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReviewResponse> create(
             @RequestBody ReviewRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(reviewService.create(request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(reviewService.create(request, userId));
     }
 
     @DeleteMapping("/{id}")
@@ -51,8 +51,8 @@ public class ReviewController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @AuthenticationPrincipal String email) {
-        reviewService.delete(id, email);
+            @AuthenticationPrincipal Long userId) {
+        reviewService.delete(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

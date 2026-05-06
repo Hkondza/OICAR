@@ -29,8 +29,8 @@ public class ReservationController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ReservationResponse>> getMyReservations(
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(reservationService.getMyReservations(email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(reservationService.getMyReservations(userId));
     }
 
 
@@ -39,8 +39,8 @@ public class ReservationController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
     public ResponseEntity<List<ReservationResponse>> getIncoming(
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(reservationService.getForMyProperties(email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(reservationService.getForMyProperties(userId));
     }
 
 
@@ -59,8 +59,8 @@ public class ReservationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReservationResponse> create(
             @RequestBody ReservationRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(reservationService.createReservation(request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(reservationService.createReservation(request, userId));
     }
 
     @PatchMapping("/{id}/status")
@@ -70,8 +70,8 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> updateStatus(
             @PathVariable Long id,
             @RequestBody StatusRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(reservationService.updateStatus(id, request.getStatus(), email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(reservationService.updateStatus(id, request.getStatus(), userId));
     }
 
     @DeleteMapping("/{id}")
@@ -80,8 +80,8 @@ public class ReservationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @AuthenticationPrincipal String email) {
-        reservationService.delete(id, email);
+            @AuthenticationPrincipal Long userId) {
+        reservationService.delete(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -23,18 +23,14 @@ public class ReservationService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
-    public List<ReservationResponse> getMyReservations(String email) {
-        User guest = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return reservationRepository.findByGuest(guest).stream()
+    public List<ReservationResponse> getMyReservations(Long userId) {
+        return reservationRepository.findByGuestId(userId).stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    public List<ReservationResponse> getForMyProperties(String email) {
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return reservationRepository.findByRoomPropertyOwnerId(owner.getId()).stream()
+    public List<ReservationResponse> getForMyProperties(Long userId) {
+        return reservationRepository.findByRoomPropertyOwnerId(userId).stream()
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -45,8 +41,8 @@ public class ReservationService {
         return mapToResponse(reservation);
     }
 
-    public ReservationResponse createReservation(ReservationRequest request, String email) {
-        User guest = userRepository.findByEmail(email)
+    public ReservationResponse createReservation(ReservationRequest request, Long userId) {
+        User guest = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Room room = roomRepository.findById(request.getRoomId())
@@ -82,16 +78,13 @@ public class ReservationService {
         return mapToResponse(reservation);
     }
 
-    public ReservationResponse updateStatus(Long id, String status, String email) {
-        User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    public ReservationResponse updateStatus(Long id, String status, Long userId) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
         boolean isOwner = reservation.getRoom().getProperty().getOwner()
-                .getId().equals(currentUser.getId());
-        boolean isGuest = reservation.getGuest().getId().equals(currentUser.getId());
+                .getId().equals(userId);
+        boolean isGuest = reservation.getGuest().getId().equals(userId);
 
         if (!isOwner && !isGuest) throw new RuntimeException("Forbidden");
         if (isGuest && !status.equals("CANCELLED")) throw new RuntimeException("Guests can only cancel");
@@ -103,14 +96,11 @@ public class ReservationService {
         return mapToResponse(reservation);
     }
 
-    public void delete(Long id, String email) {
-        User guest = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    public void delete(Long id, Long userId) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        if (!reservation.getGuest().getId().equals(guest.getId())) {
+        if (!reservation.getGuest().getId().equals(userId)) {
             throw new RuntimeException("Forbidden");
         }
 

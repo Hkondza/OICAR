@@ -42,8 +42,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
+                            userId,
                             email,
-                            userId,  // userId ide kao credentials
                             List.of(new SimpleGrantedAuthority("ROLE_" + role))
                     );
 

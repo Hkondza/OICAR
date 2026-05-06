@@ -40,8 +40,8 @@ public class PropertyController {
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<PropertyResponse> submit(
             @RequestBody PropertyRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(propertyService.submitProperty(request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(propertyService.submitProperty(request, userId));
     }
 
     @PutMapping("/{id}")
@@ -51,8 +51,8 @@ public class PropertyController {
     public ResponseEntity<PropertyResponse> update(
             @PathVariable Long id,
             @RequestBody PropertyRequest request,
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(propertyService.update(id, request, email));
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(propertyService.update(id, request, userId));
     }
 
     @DeleteMapping("/{id}")
@@ -61,8 +61,8 @@ public class PropertyController {
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @AuthenticationPrincipal String email) {
-        propertyService.delete(id, email);
+            @AuthenticationPrincipal Long userId) {
+        propertyService.delete(id, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -71,8 +71,8 @@ public class PropertyController {
             security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<List<PropertyResponse>> getMine(
-            @AuthenticationPrincipal String email) {
-        return ResponseEntity.ok(propertyService.getOwnerProperties(email));
+            @AuthenticationPrincipal  Long userId) {
+        return ResponseEntity.ok(propertyService.getOwnerProperties(userId));
     }
 
     @GetMapping("/pending")

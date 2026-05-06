@@ -19,13 +19,13 @@ public class RoomService {
     private final PropertyRepository propertyRepository;
 
 
-    public RoomResponse addRoom(Long propertyId, RoomRequest request, String email) {
+    public RoomResponse addRoom(Long propertyId, RoomRequest request, Long userId) {
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
 
         if (property.getOwner() == null ||
-                !property.getOwner().getEmail().equals(email)) {
+                !property.getOwner().getId().equals(userId)) {
             throw new RuntimeException("Not your property");
         }
 
@@ -59,13 +59,13 @@ public class RoomService {
         return mapToResponse(room);
     }
 
-    public RoomResponse updateRoom(Long roomId, RoomRequest request, String email) {
+    public RoomResponse updateRoom(Long roomId, RoomRequest request, Long userId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
 
         if (room.getProperty().getOwner() == null ||
-                !room.getProperty().getOwner().getEmail().equals(email)) {
+                !room.getProperty().getOwner().getId().equals(userId)) {
             throw new RuntimeException("Not your room");
         }
 
@@ -79,13 +79,13 @@ public class RoomService {
         return mapToResponse(room);
     }
 
-    public void deleteRoom(Long roomId, String email) {
+    public void deleteRoom(Long roomId, Long userId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         // Provjeri je li ovo vlasnikov room
         if (room.getProperty().getOwner() == null ||
-                !room.getProperty().getOwner().getEmail().equals(email)) {
+                !room.getProperty().getOwner().getId().equals(userId)) {
             throw new RuntimeException("Not your room");
         }
 
