@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface UserPropertyRepository extends JpaRepository<UserProperty, Long> {
     List<UserProperty> findByStatus(String status);
     Optional<UserProperty> findByPropertyId(Long propertyId);
+    List<UserProperty> findByUserId(Long userId);
 }

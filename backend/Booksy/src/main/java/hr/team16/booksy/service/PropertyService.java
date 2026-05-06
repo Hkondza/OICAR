@@ -90,8 +90,8 @@ public class PropertyService {
     public List<PropertyResponse> getOwnerProperties(String ownerEmail) {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return propertyRepository.findByOwnerId(owner.getId()).stream()
-                .map(p -> mapToResponse(p, "ACCEPTED", ownerEmail))
+        return userPropertyRepository.findByUserId(owner.getId()).stream()
+                .map(up -> mapToResponse(up.getProperty(), up.getStatus(), ownerEmail))
                 .toList();
     }
 
