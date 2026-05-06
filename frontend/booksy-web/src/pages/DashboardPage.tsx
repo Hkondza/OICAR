@@ -10,7 +10,7 @@ export default function DashboardPage() {
     navigate('/login')
   }
 
-  const roleLabel = session?.role === 'ADMIN' ? 'Administrator' : session?.role === 'HOST' ? 'Host' : 'Guest'
+  const roleLabel = session?.role === 'ADMIN' ? 'Administrator' : session?.role === 'OWNER' ? 'Owner' : 'Guest'
   const initials = (session?.email?.[0] ?? '?').toUpperCase()
 
   return (
