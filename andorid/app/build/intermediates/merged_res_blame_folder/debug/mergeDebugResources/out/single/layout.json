@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "hr.team16.booksy.app-mergeDebugResources-59:/layout/activity_dashboard.xml",
+        "source": "hr.team16.booksy.app-main-62:/layout/activity_dashboard.xml"
+    },
+    {
+        "merged": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-mergeDebugResources-59:\\layout\\activity_login.xml",
+        "source": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-main-62:\\layout\\activity_login.xml"
+    },
+    {
+        "merged": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-mergeDebugResources-59:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-main-62:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-mergeDebugResources-59:\\layout\\activity_register.xml",
+        "source": "C:\\Users\\Hrvoje\\.gradle\\daemon\\8.13\\hr.team16.booksy.app-main-62:\\layout\\activity_register.xml"
+    }
+]
