@@ -3,10 +3,18 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import PropertiesPage from './pages/PropertiesPage'
+import AdminPage from './pages/AdminPage'
 import { getSession } from './api/auth'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   return getSession() ? children : <Navigate to="/login" replace />
+}
+
+function RequireAdmin({ children }: { children: JSX.Element }) {
+  const session = getSession()
+  if (!session) return <Navigate to="/login" replace />
+  if (session.role !== 'ADMIN') return <Navigate to="/dashboard" replace />
+  return children
 }
 
 export default function App() {
@@ -29,6 +37,14 @@ export default function App() {
             <RequireAuth>
               <PropertiesPage />
             </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminPage />
+            </RequireAdmin>
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
