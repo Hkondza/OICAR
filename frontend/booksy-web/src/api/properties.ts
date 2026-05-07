@@ -34,3 +34,18 @@ export async function submitProperty(data: PropertyRequest): Promise<PropertyRes
   const res = await api.post<PropertyResponse>('/properties/submit', data, { headers: authHeaders() })
   return res.data
 }
+
+export async function getPendingProperties(): Promise<PropertyResponse[]> {
+  const res = await api.get<PropertyResponse[]>('/properties/pending', { headers: authHeaders() })
+  return res.data
+}
+
+export async function approveProperty(id: number): Promise<PropertyResponse> {
+  const res = await api.patch<PropertyResponse>(`/properties/${id}/approve`, {}, { headers: authHeaders() })
+  return res.data
+}
+
+export async function denyProperty(id: number): Promise<PropertyResponse> {
+  const res = await api.patch<PropertyResponse>(`/properties/${id}/deny`, {}, { headers: authHeaders() })
+  return res.data
+}

@@ -577,3 +577,107 @@ input, select { font-family: inherit; }
   flex: 1;
   margin-top: 0;
 }
+
+/* ---------- Admin page ---------- */
+.admin-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.admin-badge {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-avatar {
+  background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  transition: box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.admin-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.admin-card-meta {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.admin-card-owner {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.admin-card-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-approve {
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #10b981;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+.btn-approve:hover:not(:disabled) {
+  background: #059669;
+}
+.btn-approve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-deny {
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+.btn-deny:hover:not(:disabled) {
+  background: #dc2626;
+}
+.btn-deny:disabled { opacity: 0.5; cursor: not-allowed; }
