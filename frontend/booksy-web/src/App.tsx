@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import PropertiesPage from './pages/PropertiesPage'
+import RoomsPage from './pages/RoomsPage'
 import AdminPage from './pages/AdminPage'
 import { getSession } from './api/auth'
 
@@ -36,6 +37,14 @@ export default function App() {
           element={
             <RequireAuth>
               <PropertiesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/properties/:propertyId/rooms"
+          element={
+            <RequireAuth>
+              <RoomsPage />
             </RequireAuth>
           }
         />
