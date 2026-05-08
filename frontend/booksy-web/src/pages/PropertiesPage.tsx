@@ -103,6 +103,14 @@ export default function PropertiesPage() {
                 {p.status === 'DENIED' && (
                   <p className="property-notice property-notice-denied">Your property was not approved. Contact support for more info.</p>
                 )}
+                {p.status === 'ACCEPTED' && (
+                  <button
+                    className="btn-manage-rooms"
+                    onClick={() => navigate(`/properties/${p.id}/rooms`, { state: { propertyName: p.name } })}
+                  >
+                    Manage Rooms
+                  </button>
+                )}
               </div>
             ))}
           </div>
