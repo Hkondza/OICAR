@@ -41,13 +41,15 @@ export default function DashboardPage() {
 
         <p className="section-title">Overview</p>
         <div className="stat-grid">
-          <StatCard
-            icon="🗓"
-            iconClass="icon-blue"
-            label="My Reservations"
-            value="—"
-            description="View and manage your bookings"
-          />
+          <Link to="/reservations" style={{ textDecoration: 'none' }}>
+            <StatCard
+              icon="🗓"
+              iconClass="icon-blue"
+              label="My Reservations"
+              value=""
+              description="View and manage your bookings"
+            />
+          </Link>
           <Link to="/properties" style={{ textDecoration: 'none' }}>
             <StatCard
               icon="🏠"

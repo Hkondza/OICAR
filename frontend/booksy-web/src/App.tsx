@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import PropertiesPage from './pages/PropertiesPage'
 import RoomsPage from './pages/RoomsPage'
 import AdminPage from './pages/AdminPage'
+import ReservationsPage from './pages/ReservationsPage'
 import { getSession } from './api/auth'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <RequireAuth>
               <RoomsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reservations"
+          element={
+            <RequireAuth>
+              <ReservationsPage />
             </RequireAuth>
           }
         />
