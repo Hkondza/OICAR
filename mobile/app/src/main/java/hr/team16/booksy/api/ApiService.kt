@@ -29,6 +29,16 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("propertyId") propertyId: Long
     ): List<Room>
+
+
+    @GET("api/rooms/property/{roomId}")
+    suspend fun getRoomById(
+        @Path("roomId") roomId: Long
+    ): Room
+
+
+
+
     // Reservations
     @POST("api/reservations")
     suspend fun createReservation(
@@ -43,7 +53,7 @@ interface ApiService {
 
 
     @GET("api/reservations/room/{roomId}")
-    suspend fun getReservationsByRoom(
+    suspend fun getReservationsByRoomId(
         @Header("Authorization") token: String,
         @Path("roomId") roomId: Long
     ): List<ReservationResponse>

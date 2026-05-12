@@ -1,5 +1,7 @@
 package hr.team16.booksy.ui.reservation
 
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -8,25 +10,44 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointForward
-import com.google.android.material.datepicker.MaterialDatePicker
+import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.CalendarMonth
+import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.core.daysOfWeek
+import com.kizitonwose.calendar.view.CalendarView
+import com.kizitonwose.calendar.view.MonthDayBinder
+import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
+import com.kizitonwose.calendar.view.ViewContainer
 import hr.team16.booksy.R
 import hr.team16.booksy.api.RetrofitClient
 import hr.team16.booksy.model.ReservationRequest
 import hr.team16.booksy.model.ReservationResponse
+import hr.team16.booksy.model.Room
 import hr.team16.booksy.utils.SessionManager
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class ReservationActivity : AppCompatActivity() {
 
+
+    private var avalibleFrom: String? = null
+    private var avalibleTo: String? = null
+    private lateinit var room: Room
     private lateinit var sessionManager: SessionManager
-    private var checkInDate: String? = null
-    private var checkOutDate: String? = null
+    private var checkInDate: LocalDate? = null
+    private var checkOutDate: LocalDate? = null
     private var pricePerNight: Double = 0.0
-    private var bookedRanges: List<Pair<Long, Long>> = emptyList()
+    private var bookedDates: Set<LocalDate> = emptySet()
+    private var roomId: Long = -1
+    private lateinit var calendarView: CalendarView
+    private lateinit var tvSelectedDates: TextView
+    private lateinit var cardTotal: CardView
+    private lateinit var tvNights: TextView
+    private lateinit var tvTotalPrice: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,46 +55,42 @@ class ReservationActivity : AppCompatActivity() {
 
         sessionManager = SessionManager(this)
 
-        val roomId = intent.getLongExtra("roomId", -1)
+
+
+        roomId = intent.getLongExtra("roomId", -1)
         val roomName = intent.getStringExtra("roomName") ?: ""
         pricePerNight = intent.getDoubleExtra("pricePerNight", 0.0)
 
+        avalibleTo = intent.getStringExtra("availableTo")
+        avalibleFrom = intent.getStringExtra("availableFrom")
+
         val tvRoomName = findViewById<TextView>(R.id.tvRoomName)
         val tvPricePerNight = findViewById<TextView>(R.id.tvPricePerNight)
-        val btnSelectDates = findViewById<Button>(R.id.btnSelectDates)
-        val tvSelectedDates = findViewById<TextView>(R.id.tvSelectedDates)
-        val cardTotal = findViewById<CardView>(R.id.cardTotal)
-        val tvNights = findViewById<TextView>(R.id.tvNights)
-        val tvTotalPrice = findViewById<TextView>(R.id.tvTotalPrice)
+        calendarView = findViewById(R.id.calendarView)
+        tvSelectedDates = findViewById(R.id.tvSelectedDates)
+        cardTotal = findViewById(R.id.cardTotal)
+        tvNights = findViewById(R.id.tvNights)
+        tvTotalPrice = findViewById(R.id.tvTotalPrice)
         val btnReserve = findViewById<Button>(R.id.btnReserve)
-        val cardBookedDates = findViewById<CardView>(R.id.cardBookedDates)
-        val tvBookedDates = findViewById<TextView>(R.id.tvBookedDates)
 
         tvRoomName.text = roomName
         tvPricePerNight.text = "💰 $pricePerNight € / noć"
 
+        setupCalendar()
+
         // Dohvati zauzete datume
         lifecycleScope.launch {
             try {
-                val reservations = RetrofitClient.instance.getReservationsByRoom(
+                val reservations = RetrofitClient.instance.getReservationsByRoomId(
                     sessionManager.getBearerToken(),
                     roomId
                 )
-
-                bookedRanges = getBookedRanges(reservations)
-
-                if (bookedRanges.isNotEmpty()) {
-                    cardBookedDates.visibility = View.VISIBLE
-                    tvBookedDates.text = formatBookedDates(reservations)
-                }
-
+                bookedDates = getBookedDates(reservations)
+                calendarView.notifyCalendarChanged()
             } catch (e: Exception) {
-                // Nastavi bez zauzetih datuma
+                Toast.makeText(this@ReservationActivity,
+                    "Ne mogu učitati zauzete datume", Toast.LENGTH_SHORT).show()
             }
-        }
-
-        btnSelectDates.setOnClickListener {
-            showDateRangePicker(tvSelectedDates, cardTotal, tvNights, tvTotalPrice)
         }
 
         btnReserve.setOnClickListener {
@@ -86,7 +103,11 @@ class ReservationActivity : AppCompatActivity() {
                 try {
                     val response = RetrofitClient.instance.createReservation(
                         sessionManager.getBearerToken(),
-                        ReservationRequest(roomId, checkInDate!!, checkOutDate!!)
+                        ReservationRequest(
+                            roomId,
+                            checkInDate.toString(),
+                            checkOutDate.toString()
+                        )
                     )
                     Toast.makeText(this@ReservationActivity,
                         "Rezervacija uspješna! Status: ${response.status}",
@@ -101,73 +122,171 @@ class ReservationActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDateRangePicker(
-        tvSelectedDates: TextView,
-        cardTotal: CardView,
-        tvNights: TextView,
-        tvTotalPrice: TextView
-    ) {
-        // Onemogući prošle datume
-        val constraints = CalendarConstraints.Builder()
-            .setValidator(DateValidatorPointForward.now())
-            .build()
+    private fun setupCalendar() {
+        val currentMonth = YearMonth.from(LocalDate.parse(avalibleFrom))
+        val endMonth = YearMonth.from(LocalDate.parse(avalibleTo))
+        val daysOfWeek = daysOfWeek()
 
-        val picker = MaterialDatePicker.Builder.dateRangePicker()
-            .setTitleText("Odaberite termine")
-            .setCalendarConstraints(constraints)
-            .build()
+        calendarView.setup(currentMonth, endMonth, daysOfWeek.first())
+        calendarView.scrollToMonth(currentMonth)
 
-        picker.addOnPositiveButtonClickListener { selection ->
-            val startMs = selection.first
-            val endMs = selection.second
+        calendarView.dayBinder = object : MonthDayBinder<DayViewContainer> {
+            override fun create(view: View) = DayViewContainer(view)
 
-            // Provjeri jesu li odabrani datumi zauzeti
-            if (isOverlappingWithBooked(startMs, endMs)) {
-                Toast.makeText(this,
-                    "Odabrani termini se preklapaju sa zauzetim datumima!",
-                    Toast.LENGTH_LONG).show()
-                return@addOnPositiveButtonClickListener
+            override fun bind(container: DayViewContainer, data: CalendarDay) {
+                val tvDay = container.tvDay
+                tvDay.text = data.date.dayOfMonth.toString()
+
+                if (data.position != DayPosition.MonthDate) {
+                    tvDay.setTextColor(Color.LTGRAY)
+                    tvDay.background = null
+                    container.view.setOnClickListener(null)
+                    return
+                }
+
+                val today = LocalDate.now()
+                val date = data.date
+
+                when {
+                    date.isBefore(today) -> {
+                        tvDay.setTextColor(Color.LTGRAY)
+                        tvDay.background = null
+                        container.view.setOnClickListener(null)
+                    }
+
+                    bookedDates.contains(date) -> {
+                        tvDay.setTextColor(Color.WHITE)
+                        tvDay.background = createCircleBackground(Color.parseColor("#B00020"))
+                        container.view.setOnClickListener(null)
+                    }
+
+                    date == checkInDate || date == checkOutDate -> {
+                        tvDay.setTextColor(Color.WHITE)
+                        tvDay.background = createCircleBackground(Color.parseColor("#0F6E56"))
+                        container.view.setOnClickListener { onDateClicked(date) }
+                    }
+
+                    checkInDate != null && checkOutDate != null &&
+                            date.isAfter(checkInDate) && date.isBefore(checkOutDate) -> {
+                        tvDay.setTextColor(Color.WHITE)
+                        tvDay.background = createCircleBackground(Color.parseColor("#4CAF50"))
+                        container.view.setOnClickListener { onDateClicked(date) }
+                    }
+
+                    else -> {
+                        tvDay.setTextColor(Color.parseColor("#1A3557"))
+                        tvDay.background = null
+                        container.view.setOnClickListener { onDateClicked(date) }
+                    }
+                }
             }
-
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            checkInDate = sdf.format(Date(startMs))
-            checkOutDate = sdf.format(Date(endMs))
-
-            tvSelectedDates.text = "✅ Dolazak: $checkInDate  →  Odlazak: $checkOutDate"
-
-            // Izračunaj ukupno
-            val nights = ((endMs - startMs) / (1000 * 60 * 60 * 24)).toInt()
-            val total = nights * pricePerNight
-            tvNights.text = "Broj noći: $nights"
-            tvTotalPrice.text = "Ukupno: $total €"
-            cardTotal.visibility = View.VISIBLE
         }
 
-        picker.show(supportFragmentManager, "DATE_PICKER")
-    }
+        calendarView.monthHeaderBinder =
+            object : MonthHeaderFooterBinder<MonthHeaderContainer> {
+                override fun create(view: View) = MonthHeaderContainer(view)
 
-    private fun getBookedRanges(
-        reservations: List<ReservationResponse>
-    ): List<Pair<Long, Long>> {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return reservations
-            .filter { it.status != "CANCELLED" && it.status != "DENIED" }
-            .mapNotNull { reservation ->
-                val inDate = sdf.parse(reservation.checkIn)?.time ?: return@mapNotNull null
-                val outDate = sdf.parse(reservation.checkOut)?.time ?: return@mapNotNull null
-                Pair(inDate, outDate)
+                override fun bind(container: MonthHeaderContainer, data: CalendarMonth) {
+                    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("hr"))
+                    container.tvMonthYear.text =
+                        data.yearMonth.format(formatter).uppercase()
+
+                    container.btnPrev.setOnClickListener {
+                        calendarView.findFirstVisibleMonth()?.let {
+                            calendarView.smoothScrollToMonth(it.yearMonth.minusMonths(1))
+                        }
+                    }
+
+                    container.btnNext.setOnClickListener {
+                        calendarView.findFirstVisibleMonth()?.let {
+                            calendarView.smoothScrollToMonth(it.yearMonth.plusMonths(1))
+                        }
+                    }
+                }
             }
     }
 
-    private fun isOverlappingWithBooked(startMs: Long, endMs: Long): Boolean {
-        return bookedRanges.any { (bookedStart, bookedEnd) ->
-            startMs < bookedEnd && endMs > bookedStart
+    private fun onDateClicked(date: LocalDate) {
+        when {
+            checkInDate == null -> {
+                checkInDate = date
+                calendarView.notifyCalendarChanged()
+                tvSelectedDates.text = "Odaberite datum odlaska"
+            }
+
+            checkOutDate == null -> {
+                if (date.isBefore(checkInDate) || date == checkInDate) {
+                    checkInDate = date
+                    calendarView.notifyCalendarChanged()
+                    return
+                }
+
+                val hasBookedInRange = bookedDates.any { booked ->
+                    booked.isAfter(checkInDate) && booked.isBefore(date)
+                }
+
+                if (hasBookedInRange) {
+                    Toast.makeText(this,
+                        "Raspon sadrži zauzete datume!", Toast.LENGTH_SHORT).show()
+                    checkInDate = null
+                    calendarView.notifyCalendarChanged()
+                    tvSelectedDates.text = "Odaberite datum dolaska i odlaska"
+                    cardTotal.visibility = View.GONE
+                    return
+                }
+
+                checkOutDate = date
+                calendarView.notifyCalendarChanged()
+
+                tvSelectedDates.text =
+                    "✅ Dolazak: $checkInDate  →  Odlazak: $checkOutDate"
+
+                val nights = checkInDate!!.until(checkOutDate!!).days.toLong()
+                val total = nights * pricePerNight
+                tvNights.text = "Broj noći: $nights"
+                tvTotalPrice.text = "Ukupno: $total €"
+                cardTotal.visibility = View.VISIBLE
+            }
+
+            else -> {
+                checkInDate = date
+                checkOutDate = null
+                calendarView.notifyCalendarChanged()
+                tvSelectedDates.text = "Odaberite datum odlaska"
+                cardTotal.visibility = View.GONE
+            }
         }
     }
 
-    private fun formatBookedDates(reservations: List<ReservationResponse>): String {
-        return reservations
-            .filter { it.status != "CANCELLED" && it.status != "DENIED" }
-            .joinToString("\n") { "• ${it.checkIn} → ${it.checkOut}" }
+    private fun createCircleBackground(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(color)
+        }
     }
+
+    private fun getBookedDates(reservations: List<ReservationResponse>): Set<LocalDate> {
+        val dates = mutableSetOf<LocalDate>()
+        reservations
+            .filter { it.status != "CANCELLED" && it.status != "DENIED" }
+            .forEach { reservation ->
+                var date = LocalDate.parse(reservation.checkIn)
+                val endDate = LocalDate.parse(reservation.checkOut)
+                while (date.isBefore(endDate)) {
+                    dates.add(date)
+                    date = date.plusDays(1)
+                }
+            }
+        return dates
+    }
+}
+
+class DayViewContainer(v: View) : ViewContainer(v) {
+    val tvDay: TextView = v.findViewById(R.id.tvDay)
+}
+
+class MonthHeaderContainer(v: View) : ViewContainer(v) {
+    val tvMonthYear: TextView = v.findViewById(R.id.tvMonthYear)
+    val btnPrev: Button = v.findViewById(R.id.btnPrevMonth)
+    val btnNext: Button = v.findViewById(R.id.btnNextMonth)
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -69,56 +70,55 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Zauzeti datumi info -->
-            <androidx.cardview.widget.CardView
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/cardBookedDates"
+            <!-- Legenda -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:background="#B00020"
+                    android:layout_marginEnd="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zauzeto"
+                    android:textSize="12sp"
+                    android:textColor="#555555"
+                    android:layout_marginEnd="16dp"/>
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:background="#0F6E56"
+                    android:layout_marginEnd="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Odabrano"
+                    android:textSize="12sp"
+                    android:textColor="#555555"/>
+
+            </LinearLayout>
+
+            <!-- Kalendar -->
+            <com.kizitonwose.calendar.view.CalendarView
+                android:id="@+id/calendarView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔴 Zauzeti termini:"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="#B00020"
-                        android:layout_marginBottom="8dp"/>
-
-                    <TextView
-                        android:id="@+id/tvBookedDates"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:textColor="#555555"/>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Odabir datuma -->
-            <Button
-                android:id="@+id/btnSelectDates"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Odaberi datume"
-                android:backgroundTint="#2D6A9F"
-                android:layout_marginBottom="16dp"/>
+                app:cv_dayViewResource="@layout/item_calendar_day"
+                app:cv_monthHeaderResource="@layout/item_calendar_header"/>
 
             <TextView
                 android:id="@+id/tvSelectedDates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Datumi nisu odabrani"
+                android:text="Odaberite datum dolaska i odlaska"
                 android:textSize="14sp"
                 android:textColor="#555555"
                 android:layout_marginBottom="16dp"/>

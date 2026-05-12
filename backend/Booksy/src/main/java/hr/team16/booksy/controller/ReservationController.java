@@ -74,6 +74,18 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.updateStatus(id, request.getStatus(), userId));
     }
 
+    @GetMapping("/room/{roomId}")
+    @Operation(summary = "Update reservation status",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ReservationResponse>> getReservationByRoomId(
+            @PathVariable Long roomId ){
+        return ResponseEntity.ok(reservationService.getReservationByRoomId(roomId));
+    }
+
+
+
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete reservation",
             security = @SecurityRequirement(name = "bearerAuth"))

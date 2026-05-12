@@ -40,6 +40,8 @@ class RoomsActivity : AppCompatActivity() {
                     intent.putExtra("roomId", room.id)
                     intent.putExtra("roomName", room.name)
                     intent.putExtra("pricePerNight", room.pricePerNight.toDouble())
+                    intent.putExtra("availableFrom",room.availableFrom)
+                    intent.putExtra("availableTo",room.availableTo)
                     startActivity(intent)
                 }
                 rvRooms.adapter = adapter

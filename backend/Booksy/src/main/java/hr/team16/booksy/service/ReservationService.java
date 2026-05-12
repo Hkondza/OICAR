@@ -29,6 +29,13 @@ public class ReservationService {
                 .toList();
     }
 
+    public List<ReservationResponse> getReservationByRoomId(Long roomId) {
+        return reservationRepository.findByRoomId(roomId).stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
     public List<ReservationResponse> getForMyProperties(Long userId) {
         return reservationRepository.findByRoomPropertyOwnerId(userId).stream()
                 .map(this::mapToResponse)
