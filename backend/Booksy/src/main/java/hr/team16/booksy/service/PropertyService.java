@@ -88,8 +88,8 @@ public class PropertyService {
     }
 
     public List<PropertyResponse> getOwnerProperties(Long userId) {
-        return propertyRepository.findByOwnerId(userId).stream()
-                .map(p -> mapToResponse(p, "ACCEPTED", p.getOwner().getEmail()))
+        return userPropertyRepository.findByUserId(userId).stream()
+                .map(up -> mapToResponse(up.getProperty(), up.getStatus(), up.getUser().getEmail()))
                 .toList();
     }
 
