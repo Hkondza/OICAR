@@ -551,6 +551,12 @@ input, select { font-family: inherit; }
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
 }
 
+.room-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .room-card-header {
   display: flex;
   align-items: center;
