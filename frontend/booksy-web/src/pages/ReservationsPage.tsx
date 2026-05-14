@@ -9,6 +9,8 @@ import {
   deleteReservation,
   ReservationResponse,
 } from '../api/reservations'
+import { getAllProperties, PropertyResponse } from '../api/properties'
+import { getRoomsByProperty, RoomResponse } from '../api/rooms'
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pending',
@@ -37,6 +39,10 @@ export default function ReservationsPage() {
   const [actionId, setActionId] = useState<number | null>(null)
 
   const [showModal, setShowModal] = useState(false)
+  const [properties, setProperties] = useState<PropertyResponse[]>([])
+  const [selectedPropertyId, setSelectedPropertyId] = useState('')
+  const [rooms, setRooms] = useState<RoomResponse[]>([])
+  const [roomsLoading, setRoomsLoading] = useState(false)
   const [form, setForm] = useState({ roomId: '', checkIn: '', checkOut: '' })
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
@@ -51,8 +57,28 @@ export default function ReservationsPage() {
     Promise.all(fetches).finally(() => setLoading(false))
   }, [isOwner])
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  function openModal() {
+    setShowModal(true)
+    setFormError('')
+    setSelectedPropertyId('')
+    setRooms([])
+    setForm({ roomId: '', checkIn: '', checkOut: '' })
+    getAllProperties().then(setProperties)
+  }
+
+  async function handlePropertyChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const propId = e.target.value
+    setSelectedPropertyId(propId)
+    setForm(prev => ({ ...prev, roomId: '' }))
+    setRooms([])
+    if (!propId) return
+    setRoomsLoading(true)
+    try {
+      const data = await getRoomsByProperty(Number(propId))
+      setRooms(data)
+    } finally {
+      setRoomsLoading(false)
+    }
   }
 
   async function handleBook(e: FormEvent) {
@@ -70,10 +96,9 @@ export default function ReservationsPage() {
         checkOut: form.checkOut,
       })
       setMyReservations(prev => [created, ...prev])
-      setForm({ roomId: '', checkIn: '', checkOut: '' })
       setShowModal(false)
     } catch {
-      setFormError('Failed to create reservation. Check the room ID and dates.')
+      setFormError('Failed to create reservation. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -153,7 +178,7 @@ export default function ReservationsPage() {
             <p className="page-subtitle">View and manage your bookings.</p>
           </div>
           {activeTab === 'my' && (
-            <button className="btn-primary btn-add" onClick={() => { setShowModal(true); setFormError('') }}>
+            <button className="btn-primary btn-add" onClick={openModal}>
               + New Booking
             </button>
           )}
@@ -253,22 +278,48 @@ export default function ReservationsPage() {
               <h2 className="modal-title">New Booking</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
-            <p className="modal-subtitle">Enter the room ID and your dates.</p>
+            <p className="modal-subtitle">Select a property and room, then choose your dates.</p>
 
             <form onSubmit={handleBook}>
               <div className="field">
-                <label className="label">Room ID</label>
-                <input
-                  className="input"
-                  name="roomId"
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 3"
-                  value={form.roomId}
-                  onChange={handleChange}
+                <label className="label">Property</label>
+                <select
+                  className="input select"
+                  value={selectedPropertyId}
+                  onChange={handlePropertyChange}
                   required
-                  autoFocus
-                />
+                >
+                  <option value="">— Select a property —</option>
+                  {properties.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} · {p.city}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label className="label">Room</label>
+                <select
+                  className="input select"
+                  value={form.roomId}
+                  onChange={e => setForm(prev => ({ ...prev, roomId: e.target.value }))}
+                  required
+                  disabled={!selectedPropertyId || roomsLoading}
+                >
+                  <option value="">
+                    {!selectedPropertyId
+                      ? '— Select a property first —'
+                      : roomsLoading
+                      ? 'Loading rooms…'
+                      : rooms.length === 0
+                      ? 'No rooms available'
+                      : '— Select a room —'}
+                  </option>
+                  {rooms.map(r => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} · {r.capacity} guests · €{r.pricePerNight}/night
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="field field-row">
@@ -279,7 +330,7 @@ export default function ReservationsPage() {
                     name="checkIn"
                     type="date"
                     value={form.checkIn}
-                    onChange={handleChange}
+                    onChange={e => setForm(prev => ({ ...prev, checkIn: e.target.value }))}
                     required
                   />
                 </div>
@@ -290,7 +341,7 @@ export default function ReservationsPage() {
                     name="checkOut"
                     type="date"
                     value={form.checkOut}
-                    onChange={handleChange}
+                    onChange={e => setForm(prev => ({ ...prev, checkOut: e.target.value }))}
                     required
                   />
                 </div>

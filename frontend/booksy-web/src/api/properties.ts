@@ -25,6 +25,11 @@ function authHeaders() {
 
 const api = axios.create({ baseURL: '/api' })
 
+export async function getAllProperties(): Promise<PropertyResponse[]> {
+  const res = await api.get<PropertyResponse[]>('/properties', { headers: authHeaders() })
+  return res.data
+}
+
 export async function getMyProperties(): Promise<PropertyResponse[]> {
   const res = await api.get<PropertyResponse[]>('/properties/my', { headers: authHeaders() })
   return res.data
