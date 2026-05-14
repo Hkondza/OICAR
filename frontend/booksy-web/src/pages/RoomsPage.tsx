@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { clearSession, getSession } from '../api/auth'
-import { getRoomsByProperty, createRoom, deleteRoom, RoomResponse } from '../api/rooms'
+import { getRoomsByProperty, createRoom, updateRoom, deleteRoom, RoomResponse } from '../api/rooms'
 
 export default function RoomsPage() {
   const navigate = useNavigate()
@@ -15,6 +15,7 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<RoomResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [editingRoom, setEditingRoom] = useState<RoomResponse | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const [form, setForm] = useState({
@@ -38,6 +39,26 @@ export default function RoomsPage() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  function openAddModal() {
+    setEditingRoom(null)
+    setForm({ name: '', capacity: '', pricePerNight: '', availableFrom: '', availableTo: '' })
+    setFormError('')
+    setShowModal(true)
+  }
+
+  function openEditModal(room: RoomResponse) {
+    setEditingRoom(room)
+    setForm({
+      name: room.name,
+      capacity: String(room.capacity),
+      pricePerNight: String(room.pricePerNight),
+      availableFrom: room.availableFrom,
+      availableTo: room.availableTo,
+    })
+    setFormError('')
+    setShowModal(true)
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setFormError('')
@@ -49,18 +70,25 @@ export default function RoomsPage() {
 
     setSubmitting(true)
     try {
-      const created = await createRoom(Number(propertyId), {
+      const data = {
         name: form.name,
         capacity: Number(form.capacity),
         pricePerNight: Number(form.pricePerNight),
         availableFrom: form.availableFrom,
         availableTo: form.availableTo,
-      })
-      setRooms(prev => [...prev, created])
-      setForm({ name: '', capacity: '', pricePerNight: '', availableFrom: '', availableTo: '' })
+      }
+
+      if (editingRoom) {
+        const updated = await updateRoom(editingRoom.id, data)
+        setRooms(prev => prev.map(r => r.id === editingRoom.id ? updated : r))
+      } else {
+        const created = await createRoom(Number(propertyId), data)
+        setRooms(prev => [...prev, created])
+      }
+
       setShowModal(false)
     } catch {
-      setFormError('Failed to add room. Please try again.')
+      setFormError(editingRoom ? 'Failed to update room. Please try again.' : 'Failed to add room. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -104,7 +132,7 @@ export default function RoomsPage() {
             <h1 className="page-title">{propertyName}</h1>
             <p className="page-subtitle">Add and manage rooms for this property.</p>
           </div>
-          <button className="btn-primary btn-add" onClick={() => { setShowModal(true); setFormError('') }}>
+          <button className="btn-primary btn-add" onClick={openAddModal}>
             + Add Room
           </button>
         </div>
@@ -122,13 +150,22 @@ export default function RoomsPage() {
               <div key={room.id} className="room-card">
                 <div className="room-card-header">
                   <span className="room-name">{room.name}</span>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDelete(room.id)}
-                    disabled={deletingId === room.id}
-                  >
-                    {deletingId === room.id ? '…' : 'Delete'}
-                  </button>
+                  <div className="room-card-actions">
+                    <button
+                      className="btn-ghost"
+                      onClick={() => openEditModal(room)}
+                      disabled={deletingId === room.id}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDelete(room.id)}
+                      disabled={deletingId === room.id}
+                    >
+                      {deletingId === room.id ? '…' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
                 <div className="room-details">
                   <div className="room-detail">
@@ -158,10 +195,14 @@ export default function RoomsPage() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Add New Room</h2>
+              <h2 className="modal-title">{editingRoom ? 'Edit Room' : 'Add New Room'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
-            <p className="modal-subtitle">Add a room to <strong>{propertyName}</strong>.</p>
+            <p className="modal-subtitle">
+              {editingRoom ? `Editing ${editingRoom.name}` : `Add a room to `}
+              {!editingRoom && <strong>{propertyName}</strong>}
+              {!editingRoom && '.'}
+            </p>
 
             <form onSubmit={handleSubmit}>
               <div className="field">
@@ -237,7 +278,7 @@ export default function RoomsPage() {
               <div className="modal-actions">
                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary btn-modal-submit" disabled={submitting}>
-                  {submitting ? 'Adding…' : 'Add room'}
+                  {submitting ? (editingRoom ? 'Saving…' : 'Adding…') : (editingRoom ? 'Save changes' : 'Add room')}
                 </button>
               </div>
             </form>

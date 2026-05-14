@@ -38,6 +38,11 @@ export async function createRoom(propertyId: number, data: RoomRequest): Promise
   return res.data
 }
 
+export async function updateRoom(id: number, data: RoomRequest): Promise<RoomResponse> {
+  const res = await api.put<RoomResponse>(`/rooms/${id}`, data, { headers: authHeaders() })
+  return res.data
+}
+
 export async function deleteRoom(id: number): Promise<void> {
   await api.delete(`/rooms/${id}`, { headers: authHeaders() })
 }
