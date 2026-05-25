@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { clearSession, getSession } from '../api/auth'
 import { getPendingProperties, approveProperty, denyProperty, PropertyResponse } from '../api/properties'
 
@@ -51,6 +51,8 @@ export default function AdminPage() {
           Booksy Admin
         </div>
         <div className="dash-nav-right">
+          <Link to="/dashboard" className="btn-ghost" style={{ textDecoration: 'none' }}>Dashboard</Link>
+          <Link to="/statistics" className="btn-ghost" style={{ textDecoration: 'none' }}>📊 Statistics</Link>
           <div className="user-chip">
             <div className="user-avatar admin-avatar">{initials}</div>
             <span className="user-email">{session?.email}</span>

@@ -1,16 +1,29 @@
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { clearSession, getSession } from '../api/auth'
+import { getGuestStats, getOwnerStats, GuestStatsResponse, OwnerStatsResponse } from '../api/statistics'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const session = getSession()
+  const role = session?.role ?? 'GUEST'
+
+  const [guestStats, setGuestStats] = useState<GuestStatsResponse | null>(null)
+  const [ownerStats, setOwnerStats] = useState<OwnerStatsResponse | null>(null)
+
+  useEffect(() => {
+    getGuestStats().then(setGuestStats).catch(() => {})
+    if (role === 'OWNER') {
+      getOwnerStats().then(setOwnerStats).catch(() => {})
+    }
+  }, [role])
 
   function handleLogout() {
     clearSession()
     navigate('/login')
   }
 
-  const roleLabel = session?.role === 'ADMIN' ? 'Administrator' : session?.role === 'OWNER' ? 'Owner' : 'Guest'
+  const roleLabel = role === 'ADMIN' ? 'Administrator' : role === 'OWNER' ? 'Owner' : 'Guest'
   const initials = (session?.email?.[0] ?? '?').toUpperCase()
 
   return (
@@ -46,26 +59,74 @@ export default function DashboardPage() {
               icon="🗓"
               iconClass="icon-blue"
               label="My Reservations"
-              value=""
+              value={guestStats ? String(guestStats.totalReservations) : '…'}
               description="View and manage your bookings"
             />
           </Link>
+
           <Link to="/properties" style={{ textDecoration: 'none' }}>
             <StatCard
               icon="🏠"
               iconClass="icon-pink"
-              label="My Properties"
-              value="—"
+              label={role === 'GUEST' ? 'Properties' : 'My Properties'}
+              value={ownerStats ? String(ownerStats.totalProperties) : '—'}
               description="Manage your listings and submissions"
             />
           </Link>
-          <StatCard
-            icon="⭐"
-            iconClass="icon-green"
-            label="Reviews"
-            value="—"
-            description="Your reviews and ratings"
-          />
+
+          {role === 'OWNER' && (
+            <Link to="/reservations" style={{ textDecoration: 'none' }}>
+              <StatCard
+                icon="📥"
+                iconClass="icon-green"
+                label="Incoming Reservations"
+                value={ownerStats ? String(ownerStats.totalReservations) : '…'}
+                description="Reservations for your properties"
+              />
+            </Link>
+          )}
+
+          {role === 'OWNER' && (
+            <StatCard
+              icon="💰"
+              iconClass="icon-yellow"
+              label="Total Revenue"
+              value={ownerStats ? `€${ownerStats.totalRevenue.toFixed(2)}` : '…'}
+              description="Revenue from accepted bookings"
+            />
+          )}
+
+          {role === 'GUEST' && (
+            <StatCard
+              icon="💸"
+              iconClass="icon-yellow"
+              label="Total Spent"
+              value={guestStats ? `€${guestStats.totalSpent.toFixed(2)}` : '…'}
+              description="Spent on accepted bookings"
+            />
+          )}
+
+          <Link to="/statistics" style={{ textDecoration: 'none' }}>
+            <StatCard
+              icon="📊"
+              iconClass="icon-purple"
+              label="Analytics"
+              value="→"
+              description="View detailed statistics and charts"
+            />
+          </Link>
+
+          {role === 'ADMIN' && (
+            <Link to="/admin" style={{ textDecoration: 'none' }}>
+              <StatCard
+                icon="🛡"
+                iconClass="icon-blue"
+                label="Admin Panel"
+                value="→"
+                description="Approve or deny property submissions"
+              />
+            </Link>
+          )}
         </div>
       </main>
     </div>

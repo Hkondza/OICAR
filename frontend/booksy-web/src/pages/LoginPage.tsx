@@ -16,7 +16,7 @@ export default function LoginPage() {
     try {
       const auth = await login({ email, password })
       saveSession(auth)
-      navigate(auth.role === 'ADMIN' ? '/admin' : '/dashboard')
+      navigate('/dashboard')
     } catch {
       setError('Invalid email or password.')
     } finally {

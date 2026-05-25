@@ -6,6 +6,7 @@ import PropertiesPage from './pages/PropertiesPage'
 import RoomsPage from './pages/RoomsPage'
 import AdminPage from './pages/AdminPage'
 import ReservationsPage from './pages/ReservationsPage'
+import StatisticsPage from './pages/StatisticsPage'
 import { getSession } from './api/auth'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -63,6 +64,14 @@ export default function App() {
             <RequireAdmin>
               <AdminPage />
             </RequireAdmin>
+          }
+        />
+        <Route
+          path="/statistics"
+          element={
+            <RequireAuth>
+              <StatisticsPage />
+            </RequireAuth>
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
