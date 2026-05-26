@@ -32,4 +32,7 @@ public class Room {
 
     @Column(name = "available_to", nullable = false)
     private LocalDate availableTo;
+
+    @Column(name = "image_urls")
+    private String imageUrls;
 }

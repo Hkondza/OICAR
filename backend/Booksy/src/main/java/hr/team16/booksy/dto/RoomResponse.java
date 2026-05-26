@@ -3,6 +3,7 @@ package hr.team16.booksy.dto;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class RoomResponse {
@@ -15,4 +16,5 @@ public class RoomResponse {
     private Long propertyId;
     private String propertyName;
     private String city;
+    private List<String> imageUrls;
 }

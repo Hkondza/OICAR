@@ -1,5 +1,7 @@
 package hr.team16.booksy.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hr.team16.booksy.dto.RoomRequest;
 import hr.team16.booksy.dto.RoomResponse;
 import hr.team16.booksy.model.Property;
@@ -9,6 +11,7 @@ import hr.team16.booksy.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,6 +21,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final PropertyRepository propertyRepository;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RoomResponse addRoom(Long propertyId, RoomRequest request, Long userId) {
         Property property = propertyRepository.findById(propertyId)
@@ -83,7 +87,6 @@ public class RoomService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        // Provjeri je li ovo vlasnikov room
         if (room.getProperty().getOwner() == null ||
                 !room.getProperty().getOwner().getId().equals(userId)) {
             throw new RuntimeException("Not your room");
@@ -103,6 +106,20 @@ public class RoomService {
         response.setPropertyId(room.getProperty().getId());
         response.setPropertyName(room.getProperty().getName());
         response.setCity(room.getProperty().getCity());
+
+        if (room.getImageUrls() != null && !room.getImageUrls().isEmpty()) {
+            try {
+                response.setImageUrls(objectMapper.readValue(
+                        room.getImageUrls(),
+                        new TypeReference<List<String>>() {}
+                ));
+            } catch (Exception e) {
+                response.setImageUrls(new ArrayList<>());
+            }
+        } else {
+            response.setImageUrls(new ArrayList<>());
+        }
+
         return response;
     }
 }

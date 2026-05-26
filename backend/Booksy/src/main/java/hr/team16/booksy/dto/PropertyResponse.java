@@ -11,4 +11,5 @@ public class PropertyResponse {
     private String country;
     private String status;
     private String ownerEmail;
+    private String imageUrl;
 }

@@ -27,4 +27,7 @@ public class Property {
 
     @Column(nullable = false, length = 100)
     private String country;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 }

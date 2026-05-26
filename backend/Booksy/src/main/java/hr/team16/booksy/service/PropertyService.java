@@ -102,6 +102,7 @@ public class PropertyService {
         response.setCountry(property.getCountry());
         response.setStatus(status);
         response.setOwnerEmail(ownerEmail);
+        response.setImageUrl(property.getImageUrl());
         return response;
     }
 
