@@ -38,7 +38,7 @@ public class StatisticsService {
         stats.setCancelledCount(reservations.stream().filter(r -> "CANCELLED".equals(r.getStatus())).count());
 
         BigDecimal totalSpent = reservations.stream()
-                .filter(r -> "ACCEPTED".equals(r.getStatus()))
+                .filter(r -> !"CANCELLED".equals(r.getStatus()) && !"DENIED".equals(r.getStatus()))
                 .map(r -> r.getTotalPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.setTotalSpent(totalSpent);
@@ -69,7 +69,7 @@ public class StatisticsService {
         stats.setCancelledCount(reservations.stream().filter(r -> "CANCELLED".equals(r.getStatus())).count());
 
         BigDecimal totalRevenue = reservations.stream()
-                .filter(r -> "ACCEPTED".equals(r.getStatus()))
+                .filter(r -> !"CANCELLED".equals(r.getStatus()) && !"DENIED".equals(r.getStatus()))
                 .map(r -> r.getTotalPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.setTotalRevenue(totalRevenue);
@@ -122,7 +122,7 @@ public class StatisticsService {
         stats.setAcceptedReservations(reservationRepository.countByStatus("ACCEPTED"));
 
         BigDecimal platformRevenue = allReservations.stream()
-                .filter(r -> "ACCEPTED".equals(r.getStatus()))
+                .filter(r -> !"CANCELLED".equals(r.getStatus()) && !"DENIED".equals(r.getStatus()))
                 .map(r -> r.getTotalPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.setPlatformRevenue(platformRevenue);
