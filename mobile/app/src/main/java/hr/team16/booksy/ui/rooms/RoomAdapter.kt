@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.team16.booksy.R
 import hr.team16.booksy.model.Room
@@ -20,6 +21,7 @@ class RoomAdapter(
         val tvPrice: TextView = view.findViewById(R.id.tvRoomPrice)
         val tvDates: TextView = view.findViewById(R.id.tvRoomDates)
         val btnReserve: Button = view.findViewById(R.id.btnReserve)
+        val rvImages: RecyclerView = view.findViewById(R.id.rvRoomImages)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,6 +37,18 @@ class RoomAdapter(
         holder.tvPrice.text = "💰 ${room.pricePerNight} € / noć"
         holder.tvDates.text = "📅 ${room.availableFrom} — ${room.availableTo}"
         holder.btnReserve.setOnClickListener { onReserve(room) }
+
+        if (room.imageUrls.isNotEmpty()) {
+            holder.rvImages.visibility = View.VISIBLE
+            holder.rvImages.layoutManager = LinearLayoutManager(
+                holder.itemView.context,
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            holder.rvImages.adapter = RoomImageAdapter(room.imageUrls)
+        } else {
+            holder.rvImages.visibility = View.GONE
+        }
     }
 
     override fun getItemCount() = rooms.size

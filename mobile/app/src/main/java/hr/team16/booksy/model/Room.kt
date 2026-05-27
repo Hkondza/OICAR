@@ -11,5 +11,6 @@ data class Room(
     val availableTo: String,
     val propertyId: Long,
     val propertyName: String,
-    val city: String
+    val city: String,
+    val imageUrls: List<String> = emptyList()
 )

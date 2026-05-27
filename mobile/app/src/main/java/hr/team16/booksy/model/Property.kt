@@ -7,5 +7,6 @@ data class Property(
     val city: String,
     val country: String,
     val status: String,
-    val ownerEmail: String
+    val ownerEmail: String,
+    val imageUrl: String? = null
 )
