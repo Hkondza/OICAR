@@ -14,6 +14,10 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
+    private static final long ACCESS_TOKEN_EXPIRY_MS = 15 * 60 * 1000L;
+
+
+
     private Key getKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -24,7 +28,7 @@ public class JwtService {
                 .claim("role", role)
                 .claim("userId", userId)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))
+                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY_MS))
                 .signWith(getKey())
                 .compact();
     }

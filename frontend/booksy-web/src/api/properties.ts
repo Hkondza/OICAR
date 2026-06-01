@@ -1,5 +1,4 @@
-import axios from 'axios'
-import { getSession } from './auth'
+import axios from './axiosInstance'
 
 export interface PropertyRequest {
     name: string
@@ -19,51 +18,41 @@ export interface PropertyResponse {
     imageUrl: string | null
 }
 
-function authHeaders() {
-    const session = getSession()
-    return { Authorization: `Bearer ${session?.token}` }
-}
-
-const api = axios.create({ baseURL: '/api' })
-
 export async function getAllProperties(): Promise<PropertyResponse[]> {
-    const res = await api.get<PropertyResponse[]>('/properties', { headers: authHeaders() })
+    const res = await axios.get<PropertyResponse[]>('/properties')
     return res.data
 }
 
 export async function getMyProperties(): Promise<PropertyResponse[]> {
-    const res = await api.get<PropertyResponse[]>('/properties/my', { headers: authHeaders() })
+    const res = await axios.get<PropertyResponse[]>('/properties/my')
     return res.data
 }
 
 export async function submitProperty(data: PropertyRequest): Promise<PropertyResponse> {
-    const res = await api.post<PropertyResponse>('/properties/submit', data, { headers: authHeaders() })
+    const res = await axios.post<PropertyResponse>('/properties/submit', data)
     return res.data
 }
 
 export async function getPendingProperties(): Promise<PropertyResponse[]> {
-    const res = await api.get<PropertyResponse[]>('/properties/pending', { headers: authHeaders() })
+    const res = await axios.get<PropertyResponse[]>('/properties/pending')
     return res.data
 }
 
 export async function approveProperty(id: number): Promise<PropertyResponse> {
-    const res = await api.patch<PropertyResponse>(`/properties/${id}/approve`, {}, { headers: authHeaders() })
+    const res = await axios.patch<PropertyResponse>(`/properties/${id}/approve`, {})
     return res.data
 }
 
 export async function denyProperty(id: number): Promise<PropertyResponse> {
-    const res = await api.patch<PropertyResponse>(`/properties/${id}/deny`, {}, { headers: authHeaders() })
+    const res = await axios.patch<PropertyResponse>(`/properties/${id}/deny`, {})
     return res.data
 }
 
 export async function uploadPropertyImage(id: number, file: File): Promise<string> {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await api.post<string>(`/images/property/${id}`, formData, {
-        headers: {
-            ...authHeaders(),
-            'Content-Type': 'multipart/form-data'
-        }
+    const res = await axios.post<string>(`/images/property/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
 }

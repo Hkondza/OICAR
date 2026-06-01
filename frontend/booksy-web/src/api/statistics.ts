@@ -1,15 +1,7 @@
-import axios from 'axios'
-import { getSession } from './auth'
-
-const api = axios.create({ baseURL: '/api' })
-
-function authHeaders() {
-  const session = getSession()
-  return { Authorization: `Bearer ${session?.token}` }
-}
+import axios from './axiosInstance'
 
 export interface MonthlyEntry {
-  month: string      // "2025-01"
+  month: string
   count: number
   amount: number
 }
@@ -51,16 +43,16 @@ export interface AdminStatsResponse {
 }
 
 export async function getGuestStats(): Promise<GuestStatsResponse> {
-  const res = await api.get<GuestStatsResponse>('/statistics/guest', { headers: authHeaders() })
+  const res = await axios.get<GuestStatsResponse>('/statistics/guest')
   return res.data
 }
 
 export async function getOwnerStats(): Promise<OwnerStatsResponse> {
-  const res = await api.get<OwnerStatsResponse>('/statistics/owner', { headers: authHeaders() })
+  const res = await axios.get<OwnerStatsResponse>('/statistics/owner')
   return res.data
 }
 
 export async function getAdminStats(): Promise<AdminStatsResponse> {
-  const res = await api.get<AdminStatsResponse>('/statistics/admin', { headers: authHeaders() })
+  const res = await axios.get<AdminStatsResponse>('/statistics/admin')
   return res.data
 }

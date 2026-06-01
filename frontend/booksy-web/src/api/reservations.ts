@@ -1,5 +1,4 @@
-import axios from 'axios'
-import { getSession } from './auth'
+import axios from './axiosInstance'
 
 export interface ReservationRequest {
   roomId: number
@@ -21,33 +20,26 @@ export interface ReservationResponse {
   guestEmail: string
 }
 
-function authHeaders() {
-  const session = getSession()
-  return { Authorization: `Bearer ${session?.token}` }
-}
-
-const api = axios.create({ baseURL: '/api' })
-
 export async function getMyReservations(): Promise<ReservationResponse[]> {
-  const res = await api.get<ReservationResponse[]>('/reservations/my', { headers: authHeaders() })
+  const res = await axios.get<ReservationResponse[]>('/reservations/my')
   return res.data
 }
 
 export async function getIncomingReservations(): Promise<ReservationResponse[]> {
-  const res = await api.get<ReservationResponse[]>('/reservations/incoming', { headers: authHeaders() })
+  const res = await axios.get<ReservationResponse[]>('/reservations/incoming')
   return res.data
 }
 
 export async function createReservation(data: ReservationRequest): Promise<ReservationResponse> {
-  const res = await api.post<ReservationResponse>('/reservations', data, { headers: authHeaders() })
+  const res = await axios.post<ReservationResponse>('/reservations', data)
   return res.data
 }
 
 export async function updateReservationStatus(id: number, status: string): Promise<ReservationResponse> {
-  const res = await api.patch<ReservationResponse>(`/reservations/${id}/status`, { status }, { headers: authHeaders() })
+  const res = await axios.patch<ReservationResponse>(`/reservations/${id}/status`, { status })
   return res.data
 }
 
 export async function deleteReservation(id: number): Promise<void> {
-  await api.delete(`/reservations/${id}`, { headers: authHeaders() })
+  await axios.delete(`/reservations/${id}`)
 }
