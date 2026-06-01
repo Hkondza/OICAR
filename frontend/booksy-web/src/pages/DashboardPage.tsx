@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { clearSession, getSession } from '../api/auth'
+import { logout, getSession } from '../api/auth'
 import { getGuestStats, getOwnerStats, GuestStatsResponse, OwnerStatsResponse } from '../api/statistics'
 
 export default function DashboardPage() {
@@ -18,10 +18,10 @@ export default function DashboardPage() {
     }
   }, [role])
 
-  function handleLogout() {
-    clearSession()
-    navigate('/login')
-  }
+async function handleLogout() {
+  await logout()
+  navigate('/login')
+}
 
   const roleLabel = role === 'ADMIN' ? 'Administrator' : role === 'OWNER' ? 'Owner' : 'Guest'
   const initials = (session?.email?.[0] ?? '?').toUpperCase()
