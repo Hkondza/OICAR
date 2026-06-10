@@ -47,10 +47,7 @@ public class ImageController {
             Property property = propertyRepository.findById(propertyId)
                     .orElseThrow(() -> new RuntimeException("Property not found"));
 
-            if (property.getOwner() == null ||
-                    !property.getOwner().getId().equals(userId)) {
-                return ResponseEntity.status(403).body("Not your property");
-            }
+
 
             String imageUrl = r2StorageService.uploadPropertyImage(propertyId, file);
             property.setImageUrl(imageUrl);
